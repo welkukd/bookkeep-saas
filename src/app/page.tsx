@@ -454,7 +454,7 @@ export default function LandingPage() {
               Ready to understand your money?
             </h2>
             <p className="text-body-lg text-white/80 mb-8">
-              Join thousands who've made bookkeeping effortless. Free forever for personal use.
+              Join thousands who&apos;ve made bookkeeping effortless. Free forever for personal use.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/signup">

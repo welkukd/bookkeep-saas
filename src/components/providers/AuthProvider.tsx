@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { User, Session } from '@supabase/supabase-js';
 import { Profile, Household, HouseholdMember } from '@/lib/types';
@@ -77,6 +77,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [householdMembers, setHouseholdMembers] = useState<HouseholdMember[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchHousehold = useCallback(async (householdId: string) => {
+    try {
+      const supabase: any = getSupabaseClient();
+      const { data: householdData } = await supabase
+        .from('households')
+        .select('*')
+        .eq('id', householdId)
+        .single();
+
+      if (householdData) {
+        setHousehold(householdData);
+        
+        // Fetch members
+        const { data: members } = await supabase
+          .from('household_members')
+          .select(`
+            *,
+            profile:profiles(*)
+          `)
+          .eq('household_id', householdId);
+        
+        setHouseholdMembers(members || []);
+      }
+    } catch {
+      // Ignore errors
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchProfile = useCallback(async (userId: string) => {
+    try {
+      const supabase: any = getSupabaseClient();
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (profileData) {
+        setProfile(profileData);
+        
+        if (profileData.default_household_id) {
+          await fetchHousehold(profileData.default_household_id);
+        } else {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    } catch {
+      setLoading(false);
+    }
+  }, [fetchHousehold]);
+
   useEffect(() => {
     const supabase = getSupabaseClient();
     // Get initial session
@@ -106,62 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
-
-  const fetchProfile = async (userId: string) => {
-    try {
-      const supabase: any = getSupabaseClient();
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (profileData) {
-        setProfile(profileData);
-        
-        if (profileData.default_household_id) {
-          await fetchHousehold(profileData.default_household_id);
-        } else {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-      }
-    } catch {
-      setLoading(false);
-    }
-  };
-
-  const fetchHousehold = async (householdId: string) => {
-    try {
-      const supabase: any = getSupabaseClient();
-      const { data: householdData } = await supabase
-        .from('households')
-        .select('*')
-        .eq('id', householdId)
-        .single();
-
-      if (householdData) {
-        setHousehold(householdData);
-        
-        // Fetch members
-        const { data: members } = await supabase
-          .from('household_members')
-          .select(`
-            *,
-            profile:profiles(*)
-          `)
-          .eq('household_id', householdId);
-        
-        setHouseholdMembers(members || []);
-      }
-    } catch {
-      // Ignore errors
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchProfile]);
 
   const switchHousehold = async (householdId: string) => {
     if (!user) return;
