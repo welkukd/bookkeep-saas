@@ -1,0 +1,514 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Card, CardContent } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { 
+  TrendingUp, Mail, Lock, User, CreditCard, 
+  Users, Smartphone, CheckCircle, ChevronRight,
+  Sparkles, Shield, Globe, ArrowRight
+} from 'lucide-react';
+
+const steps = [
+  {
+    id: 'welcome',
+    title: 'Welcome to Bookkeep',
+    description: 'Intelligent bookkeeping that understands natural language. Let\'s get you set up in 2 minutes.',
+    icon: Sparkles,
+  },
+  {
+    id: 'account',
+    title: 'Create Your Account',
+    description: 'Enter your email and create a secure password. We\'ll create your personal household.',
+    icon: User,
+  },
+  {
+    id: 'household',
+    title: 'Set Up Your Household',
+    description: 'Name your household, choose your currency, and invite family or team members.',
+    icon: Users,
+  },
+  {
+    id: 'accounts',
+    title: 'Add Your Accounts',
+    description: 'Add checking, savings, credit cards, cash — whatever you use. Manual or connected.',
+    icon: CreditCard,
+  },
+  {
+    id: 'complete',
+    title: 'You\'re Ready!',
+    description: 'Start tracking with natural language. Type "morning coffee $5" and watch it categorize automatically.',
+    icon: CheckCircle,
+  },
+];
+
+export default function OnboardingPage() {
+  const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    householdName: '',
+    currency: 'USD',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    accounts: [] as Array<{ name: string; type: string; balance: number }>,
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateStep = (stepId: string): boolean => {
+    const newErrors: Record<string, string> = {};
+    
+    if (stepId === 'account') {
+      if (!formData.email) newErrors.email = 'Email is required';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Invalid email format';
+      if (!formData.password) newErrors.password = 'Password is required';
+      else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
+      if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    }
+    
+    if (stepId === 'household') {
+      if (!formData.householdName.trim()) newErrors.householdName = 'Household name is required';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    const stepId = steps[currentStep].id;
+    if (validateStep(stepId)) {
+      if (currentStep < steps.length - 1) {
+        setCurrentStep(prev => prev + 1);
+      } else {
+        router.push('/dashboard');
+      }
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
+
+  const currentStepData = steps[currentStep];
+  const progress = ((currentStep + 1) / steps.length) * 100;
+
+  return (
+    <div className="min-h-screen bg-background flex">
+      {/* Progress Sidebar */}
+      <div className="hidden lg:block w-64 bg-surface border-r border-border p-6 space-y-4">
+        <Link href="/" className="flex items-center gap-2 mb-8" aria-label="Bookkeep Home">
+          <div className="w-8 h-8 rounded-xl bg-gradient-trust flex items-center justify-center">
+            <TrendingUp className="w-5 h-5 text-white" />
+          </div>
+          <span className="font-display text-heading-md font-medium text-text-primary">Bookkeep</span>
+        </Link>
+        
+        <div className="space-y-3">
+          {steps.map((step, index) => (
+            <div
+              key={step.id}
+              className={`flex items-start gap-3 p-3 rounded-xl transition-all duration-300 ${
+                index < currentStep 
+                  ? 'bg-sage-50 dark:bg-sage-900/20 border border-sage-200 dark:border-sage-800'
+                  : index === currentStep
+                  ? 'bg-trust-50 dark:bg-trust-900/20 border border-trust-200 dark:border-trust-800'
+                  : 'bg-surface border border-border'
+              }`}
+            >
+              <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                index < currentStep
+                  ? 'bg-sage-500 text-white'
+                  : index === currentStep
+                  ? 'bg-trust-500 text-white'
+                  : 'bg-surface border border-border text-text-muted'
+              }`}>
+                {index < currentStep ? (
+                  <CheckCircle className="w-5 h-5" />
+                ) : (
+                  <span>{index + 1}</span>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={`text-body-sm font-medium ${
+                  index <= currentStep ? 'text-text-primary' : 'text-text-muted'
+                }`}>{step.title}</p>
+                <p className={`text-caption mt-0.5 ${
+                  index <= currentStep ? 'text-text-secondary' : 'text-text-muted'
+                }`}>{step.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="w-full max-w-md">
+          {/* Mobile Progress */}
+          <div className="lg:hidden mb-8">
+            <div className="flex items-center justify-between mb-4">
+              {steps.map((step, index) => (
+                <div key={step.id} className="flex flex-col items-center flex-1 relative">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-2 ${
+                    index < currentStep
+                      ? 'bg-sage-500 text-white'
+                      : index === currentStep
+                      ? 'bg-trust-500 text-white'
+                      : 'bg-surface border border-border text-text-muted'
+                  }`}>
+                    {index < currentStep ? <CheckCircle className="w-5 h-5" /> : <span>{index + 1}</span>}
+                  </div>
+                  <span className={`text-caption text-center ${index <= currentStep ? 'text-text-primary' : 'text-text-muted'}`}>
+                    {step.title}
+                  </span>
+                  {index < steps.length - 1 && (
+                    <div className={`absolute top-5 left-[calc(50%+20px)] w-full h-1 ${index < currentStep ? 'bg-sage-500' : 'bg-border'} z-[-1]`} />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="h-2 bg-border rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-trust rounded-full transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+
+          <Card variant="elevated">
+            <CardContent className="p-8 space-y-6">
+              {/* Step Header */}
+              <div className="text-center mb-4">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-trust mb-4">
+                  <currentStepData.icon className="w-7 h-7 text-white" />
+                </div>
+                <h1 className="text-display-sm font-display font-medium text-text-primary">{currentStepData.title}</h1>
+                <p className="text-body text-text-secondary mt-2">{currentStepData.description}</p>
+              </div>
+
+              {/* Step Content */}
+              <div className="space-y-4">
+                {currentStepData.id === 'welcome' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { icon: Sparkles, label: 'Natural Language', color: 'trust' },
+                        { icon: TrendingUp, label: 'Beautiful Charts', color: 'sage' },
+                        { icon: Shield, label: 'Privacy First', color: 'coral' },
+                      ].map((feature, i) => (
+                        <div key={i} className="p-4 rounded-xl bg-surface border border-border text-center">
+                          <div className="p-2 rounded-lg mb-2" style={{ backgroundColor: `var(--color-${feature.color}-100)` }}>
+                            <feature.icon className="w-5 h-5" style={{ color: `var(--color-${feature.color}-600)` }} />
+                          </div>
+                          <p className="text-body-sm font-medium text-text-primary">{feature.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <Button onClick={handleNext} fullWidth size="lg" className="mt-4">
+                      Get Started
+                      <ArrowRight className="w-5 h-5" />
+                    </Button>
+                  </div>
+                )}
+
+                {currentStepData.id === 'account' && (
+                  <div className="space-y-4">
+                    <Input
+                      label="Email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      error={errors.email}
+                      placeholder="you@example.com"
+                      autoComplete="email"
+                      autoFocus
+                    />
+                    <Input
+                      label="Password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                      error={errors.password}
+                      placeholder="At least 8 characters"
+                      autoComplete="new-password"
+                      hint="Use a mix of letters, numbers, and symbols"
+                    />
+                    <Input
+                      label="Confirm Password"
+                      type="password"
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                      error={errors.confirmPassword}
+                      placeholder="Confirm your password"
+                      autoComplete="new-password"
+                    />
+                    <div className="flex items-start gap-3 p-3 bg-surface rounded-xl border border-border">
+                      <Lock className="w-5 h-5 text-trust-500 mt-0.5 flex-shrink-0" />
+                      <p className="text-body-sm text-text-secondary">
+                        By continuing, you agree to our <Link href="/terms" className="text-trust-600 hover:underline">Terms</Link> and <Link href="/privacy" className="text-trust-600 hover:underline">Privacy Policy</Link>.
+                      </p>
+                    </div>
+                    <Button onClick={handleNext} fullWidth disabled={Object.keys(errors).length > 0}>
+                      Create Account
+                      <ArrowRight className="w-5 h-5" />
+                    </Button>
+                  </div>
+                )}
+
+                {currentStepData.id === 'household' && (
+                  <div className="space-y-4">
+                    <Input
+                      label="Household Name"
+                      value={formData.householdName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, householdName: e.target.value }))}
+                      error={errors.householdName}
+                      placeholder="e.g., Smith Family, Acme Inc."
+                      autoFocus
+                    />
+                    <Input
+                      label="Currency"
+                      as="select"
+                      value={formData.currency}
+                      onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
+                      options={[
+                        { value: 'USD', label: 'USD - US Dollar ($)' },
+                        { value: 'CAD', label: 'CAD - Canadian Dollar (CA$)' },
+                        { value: 'EUR', label: 'EUR - Euro (€)' },
+                        { value: 'GBP', label: 'GBP - British Pound (£)' },
+                        { value: 'INR', label: 'INR - Indian Rupee (₹)' },
+                        { value: 'AUD', label: 'AUD - Australian Dollar (A$)' },
+                      ]}
+                    />
+                    <Input
+                      label="Timezone"
+                      as="select"
+                      value={formData.timezone}
+                      onChange={(e) => setFormData(prev => ({ ...prev, timezone: e.target.value }))}
+                      options={[
+                        { value: 'America/New_York', label: 'Eastern Time (ET)' },
+                        { value: 'America/Chicago', label: 'Central Time (CT)' },
+                        { value: 'America/Denver', label: 'Mountain Time (MT)' },
+                        { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+                        { value: 'Europe/London', label: 'London (GMT/BST)' },
+                        { value: 'Europe/Paris', label: 'Paris (CET/CEST)' },
+                        { value: 'Asia/Tokyo', label: 'Tokyo (JST)' },
+                        { value: 'Asia/Kolkata', label: 'Mumbai (IST)' },
+                        { value: 'Australia/Sydney', label: 'Sydney (AEST/AEDT)' },
+                        { value: Intl.DateTimeFormat().resolvedOptions().timeZone, label: `Auto-detect (${Intl.DateTimeFormat().resolvedOptions().timeZone})` },
+                      ]}
+                    />
+                    <div className="p-4 rounded-xl bg-surface border border-border">
+                      <p className="text-body-sm font-medium text-text-primary mb-3">Invite Members (Optional)</p>
+                      <p className="text-body-sm text-text-secondary mb-3">Add family or team members now, or invite them later from settings.</p>
+                      <div className="space-y-2">
+                        {[1, 2].map((i) => (
+                          <div key={i} className="flex gap-2">
+                            <Input
+                              placeholder={`Member ${i} email`}
+                              type="email"
+                              className="flex-1"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <Button variant="secondary" onClick={handleBack} fullWidth>
+                        <ChevronRight className="w-5 h-5 rotate-180" />
+                        Back
+                      </Button>
+                      <Button onClick={handleNext} fullWidth disabled={Object.keys(errors).length > 0}>
+                        Continue
+                        <ArrowRight className="w-5 h-5" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {currentStepData.id === 'accounts' && (
+                  <div className="space-y-4">
+                    <p className="text-body text-text-secondary text-center">
+                      Add your main accounts now. You can always add more later.
+                    </p>
+                    
+                    <div className="space-y-3">
+                      {[
+                        { type: 'checking', label: 'Checking Account', icon: 'building-2', color: 'trust' },
+                        { type: 'savings', label: 'Savings Account', icon: 'piggy-bank', color: 'sage' },
+                        { type: 'credit_card', label: 'Credit Card', icon: 'credit-card', color: 'coral' },
+                        { type: 'cash', label: 'Cash', icon: 'wallet', color: 'slate' },
+                      ].map((account) => (
+                        <button
+                          key={account.type}
+                          type="button"
+                          onClick={() => {
+                            const exists = formData.accounts.find(a => a.type === account.type);
+                            if (exists) {
+                              setFormData(prev => ({
+                                ...prev,
+                                accounts: prev.accounts.filter(a => a.type !== account.type),
+                              }));
+                            } else {
+                              setFormData(prev => ({
+                                ...prev,
+                                accounts: [...prev.accounts, { name: '', type: account.type, balance: 0 }],
+                              }));
+                            }
+                          }}
+                          className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
+                            formData.accounts.some(a => a.type === account.type)
+                              ? 'border-trust-500 bg-trust-50 dark:bg-trust-900/20'
+                              : 'border-border hover:border-trust-500/50'
+                          }`}
+                        >
+                          <div className={`p-3 rounded-xl ${formData.accounts.some(a => a.type === account.type) ? 'bg-trust-500' : 'bg-surface'} text-white`}>
+                            {account.icon === 'building-2' && <CreditCard className="w-5 h-5" />}
+                            {account.icon === 'piggy-bank' && <TrendingUp className="w-5 h-5" />}
+                            {account.icon === 'credit-card' && <CreditCard className="w-5 h-5" />}
+                            {account.icon === 'wallet' && <Users className="w-5 h-5" />}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-body font-medium text-text-primary">{account.label}</p>
+                            <p className="text-body-sm text-text-muted">{formData.accounts.some(a => a.type === account.type) ? 'Selected' : 'Add this account'}</p>
+                          </div>
+                          {formData.accounts.some(a => a.type === account.type) && (
+                            <CheckCircle className="w-5 h-5 text-trust-500" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    {formData.accounts.length > 0 && (
+                      <div className="space-y-4 border-t border-border pt-4">
+                        <p className="text-body-sm font-medium text-text-primary">Account Details</p>
+                        {formData.accounts.map((account, index) => (
+                          <div key={index} className="space-y-3 p-4 bg-surface rounded-xl border border-border">
+                            <div className="flex items-center gap-2">
+                              <Badge variant={account.type === 'credit_card' ? 'coral' : account.type === 'savings' ? 'sage' : 'trust'} size="sm">
+                                {account.type.replace('_', ' ')}
+                              </Badge>
+                              <Button variant="ghost" size="icon-sm" onClick={() => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  accounts: prev.accounts.filter((_, i) => i !== index),
+                                }));
+                              }}>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                              </Button>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <Input
+                                label="Account Name"
+                                placeholder="e.g., Chase Checking"
+                                value={account.name}
+                                onChange={(e) => {
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    accounts: prev.accounts.map((a, i) => i === index ? { ...a, name: e.target.value } : a),
+                                  }));
+                                }}
+                              />
+                              <Input
+                                label="Current Balance"
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                value={account.balance}
+                                onChange={(e) => {
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    accounts: prev.accounts.map((a, i) => i === index ? { ...a, balance: parseFloat(e.target.value) || 0 } : a),
+                                  }));
+                                }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    <div className="flex gap-3">
+                      <Button variant="secondary" onClick={handleBack} fullWidth>
+                        <ChevronRight className="w-5 h-5 rotate-180" />
+                        Back
+                      </Button>
+                      <Button onClick={handleNext} fullWidth disabled={formData.accounts.length === 0}>
+                        {formData.accounts.length > 0 ? 'Finish Setup' : 'Skip for Now'}
+                        <ArrowRight className="w-5 h-5" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {currentStepData.id === 'complete' && (
+                  <div className="space-y-6 text-center">
+                    <div className="w-20 h-20 mx-auto rounded-full bg-gradient-trust flex items-center justify-center">
+                      <CheckCircle className="w-10 h-10 text-white" />
+                    </div>
+                    <h2 className="text-display-sm font-display font-medium text-text-primary">You're all set!</h2>
+                    <p className="text-body text-text-secondary">Your household is ready. Let's add your first transaction.</p>
+                    
+                    <div className="p-6 rounded-2xl bg-surface border border-border space-y-4">
+                      <p className="text-body-sm text-text-muted">Try typing:</p>
+                      <div className="flex flex-wrap justify-center gap-2">
+                        {[
+                          'morning coffee at tim hortons $5',
+                          'groceries at whole foods 85',
+                          'uber to airport 45',
+                          'salary received 3000',
+                        ].map((example, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            className="btn-ghost btn-sm text-body-sm px-3 py-2"
+                            onClick={() => {
+                              router.push('/dashboard');
+                            }}
+                          >
+                            {example}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <Button onClick={() => router.push('/dashboard')} fullWidth size="lg">
+                      Go to Dashboard
+                      <ArrowRight className="w-5 h-5" />
+                    </Button>
+                    
+                    <p className="text-caption text-text-muted">
+                      <Link href="/settings" className="text-trust-600 hover:underline">Settings</Link> &#8226;
+                      <Link href="/help" className="text-trust-600 hover:underline">Help</Link> &#8226;
+                      <Link href="/privacy" className="text-trust-600 hover:underline">Privacy</Link>
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Navigation for non-welcome steps */}
+              {currentStepData.id !== 'welcome' && currentStepData.id !== 'complete' && (
+                <div className="flex gap-3 pt-4 border-t border-border">
+                  <Button variant="secondary" onClick={handleBack} fullWidth>
+                    <ChevronRight className="w-5 h-5 rotate-180" />
+                    Back
+                  </Button>
+                  <Button onClick={handleNext} fullWidth disabled={Object.keys(errors).length > 0}>
+                    {currentStep === steps.length - 2 ? 'Finish' : 'Continue'}
+                    <ArrowRight className="w-5 h-5" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

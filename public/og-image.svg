@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#08090a"/>
+  <rect x="100" y="100" width="1000" height="430" rx="24" fill="url(#cardGradient)"/>
+  <defs>
+    <linearGradient id="cardGradient" x1="100" y1="100" x2="1100" y2="530" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="brandGradient" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="50%" stop-color="#14b8a6"/>
+      <stop offset="100%" stop-color="#2dd4bf"/>
+    </linearGradient>
+    <linearGradient id="textGradient" x1="0" y1="0" x2="600" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="50%" stop-color="#14b8a6"/>
+      <stop offset="100%" stop-color="#2dd4bf"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Brand -->
+  <circle cx="200" cy="200" r="60" fill="url(#brandGradient)"/>
+  <path d="M170 200L195 225L230 175" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Title -->
+  <text x="300" y="215" font-family="Georgia, serif" font-size="48" font-weight="400" fill="white" letter-spacing="-1">Bookkeep</text>
+  <text x="300" y="270" font-family="system-ui, sans-serif" font-size="24" fill="#94a3b8">Intelligent bookkeeping for modern life</text>
+  
+  <!-- Demo charts -->
+  <rect x="200" y="320" width="800" height="200" rx="12" fill="#08090a"/>
+  
+  <!-- Bar chart -->
+  <rect x="240" y="440" width="60" height="60" rx="4" fill="#0d9488" opacity="0.8"/>
+  <rect x="330" y="380" width="60" height="120" rx="4" fill="#14b8a6" opacity="0.9"/>
+  <rect x="420" y="460" width="60" height="40" rx="4" fill="#2dd4bf" opacity="0.7"/>
+  <rect x="510" y="400" width="60" height="100" rx="4" fill="#0d9488" opacity="0.8"/>
+  <rect x="600" y="480" width="60" height="20" rx="4" fill="#2dd4bf" opacity="0.6"/>
+  <rect x="690" y="360" width="60" height="140" rx="4" fill="#14b8a6" opacity="0.9"/>
+  <rect x="780" y="420" width="60" height="80" rx="4" fill="#0d9488" opacity="0.8"/>
+  <rect x="870" y="450" width="60" height="50" rx="4" fill="#2dd4bf" opacity="0.7"/>
+  
+  <!-- Donut chart preview -->
+  <circle cx="950" cy="380" r="50" stroke="url(#brandGradient)" stroke-width="12" fill="none" stroke-dasharray="200 400" transform="rotate(-90 950 380)"/>
+  <text x="950" y="385" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="white" text-anchor="middle">$3.2K</text>
+  <text x="950" y="405" font-family="system-ui, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">Spent</text>
+  
+  <!-- Tagline -->
+  <text x="600" y="560" font-family="system-ui, sans-serif" font-size="18" fill="#64748b" text-anchor="middle">Type naturally: "morning coffee at tim hortons $5"</text>
+</svg>
