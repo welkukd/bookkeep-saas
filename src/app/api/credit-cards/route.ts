@@ -5,7 +5,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Supabase not configured' }, { status: 503 });
+    }
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -58,7 +61,7 @@ export async function GET(request: NextRequest) {
       const latestStatement = statements?.find(s => s.account_id === account.id);
       const latestProjection = projections?.find(p => p.account_id === account.id);
       
-      const daysUntilDue = account.due_day 
+      const daysUntilDue = account.due_day
         ? Math.ceil((new Date(new Date().getFullYear(), new Date().getMonth() + 1, account.due_day).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
         : null;
 

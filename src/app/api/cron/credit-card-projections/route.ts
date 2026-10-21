@@ -10,7 +10,10 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Supabase not configured' }, { status: 503 });
+    }
     const today = new Date();
 
     // Get active credit card accounts
@@ -50,7 +53,7 @@ export async function GET(request: NextRequest) {
         .limit(1)
         .single();
 
-      const startDate = lastStatement 
+      const startDate = lastStatement
         ? new Date(lastStatement.statement_date)
         : new Date(today.getFullYear(), today.getMonth() - 1, 1);
       startDate.setDate(startDate.getDate() + 1);

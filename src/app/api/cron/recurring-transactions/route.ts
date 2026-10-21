@@ -10,7 +10,10 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Supabase not configured' }, { status: 503 });
+    }
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 

@@ -11,7 +11,10 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Supabase not configured' }, { status: 503 });
+    }
     
     // Generate daily analytics snapshots for all active households
     const { data: households } = await supabase

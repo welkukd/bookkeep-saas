@@ -1,41 +1,15 @@
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@/lib/supabase/server';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
-
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabase = await createServerClient();
 
   // If Supabase not configured, skip auth checks
-  if (!url || !key) {
-    return supabaseResponse;
+  if (!supabase) {
+    return NextResponse.next({ request });
   }
 
-  const supabase = createServerClient(
-    url,
-    key,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
+  let supabaseResponse = NextResponse.next({ request });
 
   // Refresh session if expired - required for Server Components
   const {
@@ -45,7 +19,7 @@ export async function middleware(request: NextRequest) {
   // Protected routes
   const protectedPaths = ['/dashboard', '/accounts', '/budgets', '/goals', '/reports', '/settings'];
   const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path));
-  
+
   // Auth routes that should redirect to dashboard if logged in
   const authPaths = ['/login', '/signup', '/auth'];
   const isAuthPath = authPaths.some(path => request.nextUrl.pathname.startsWith(path));

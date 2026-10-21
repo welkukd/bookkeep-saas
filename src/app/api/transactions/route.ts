@@ -29,7 +29,10 @@ const createTransactionSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Supabase not configured' }, { status: 503 });
+    }
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -104,7 +107,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Supabase not configured' }, { status: 503 });
+    }
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {

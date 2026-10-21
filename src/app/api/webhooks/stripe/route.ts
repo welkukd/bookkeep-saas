@@ -4,21 +4,25 @@ import Stripe from 'stripe';
 
 export const dynamic = 'force-dynamic';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2024-06-20',
   typescript: true,
 });
 
 const PRICE_IDS = {
-  pro_monthly: process.env.STRIPE_PRICE_ID_PRO_MONTHLY!,
-  pro_yearly: process.env.STRIPE_PRICE_ID_PRO_YEARLY!,
-  team_monthly: process.env.STRIPE_PRICE_ID_TEAM_MONTHLY!,
-  team_yearly: process.env.STRIPE_PRICE_ID_TEAM_YEARLY!,
+  pro_monthly: process.env.STRIPE_PRICE_ID_PRO_MONTHLY || '',
+  pro_yearly: process.env.STRIPE_PRICE_ID_PRO_YEARLY || '',
+  team_monthly: process.env.STRIPE_PRICE_ID_TEAM_MONTHLY || '',
+  team_yearly: process.env.STRIPE_PRICE_ID_TEAM_YEARLY || '',
 };
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 
 export async function POST(request: NextRequest) {
+  if (!process.env.STRIPE_SECRET_KEY || !webhookSecret) {
+    return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 });
+  }
+
   try {
     const body = await request.text();
     const signature = request.headers.get('stripe-signature');
@@ -36,7 +40,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Webhook signature verification failed' }, { status: 400 });
     }
 
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Supabase not configured' }, { status: 503 });
+    }
 
     // Handle the event
     switch (event.type) {
