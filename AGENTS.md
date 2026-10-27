@@ -86,3 +86,10 @@
 # All API routes functional with graceful degradation when Supabase env vars missing
 # Cron endpoints return 401 (expected without CRON_SECRET)
 # GitHub push completed with middleware fix
+#
+# VERIFIED 2026-10-27:
+# - Health endpoint: https://bookkeep-saas.vercel.app/api/health returns {"status":"ok","version":"1.0.0"}
+# - Protected routes: /api/accounts returns 401 Unauthorized (correct — no Supabase)
+# - Middleware: Gracefully skips auth when Supabase env vars are placeholders
+# - Build: local typecheck/lint/build all PASS
+# - EXTERNAL BLOCKER UNCHANGED: Supabase project not yet provisioned
